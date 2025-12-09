@@ -144,7 +144,7 @@ client.on('interactionCreate', async interaction => {
         }
       }
 
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 1000; i++) {
         try {
           const newChannel = await guild.channels.create({
             name: `${channelName}-${i}`,
