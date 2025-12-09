@@ -1,0 +1,18 @@
+{
+  "name": "magata-discord-bot",
+  "version": "1.0.0",
+  "description": "Bot Discord multi-tool pour devoir scolaire",
+  "main": "bot.cjs",
+  "scripts": {
+    "start": "node bot.cjs"
+  },
+  "keywords": ["discord", "bot", "magata"],
+  "author": "Student Project",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.25.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
