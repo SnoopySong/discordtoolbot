@@ -93,6 +93,14 @@ const commands = [
     .setName('ping')
     .setDescription('Active/désactive le cycle de ping automatique')
     .addStringOption(option =>
+      option.setName('message')
+        .setDescription('Message avant le ping')
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('temps')
+        .setDescription('Temps entre chaque ping (en secondes)')
+        .setRequired(true))
+    .addStringOption(option =>
       option.setName('mot_de_passe')
         .setDescription('Mot de passe requis')
         .setRequired(true)),
@@ -167,8 +175,16 @@ client.on('interactionCreate', async interaction => {
   if (commandName === 'say') {
     const message = interaction.options.getString('message');
 
-    await interaction.reply({ content: '✓ Message envoyé', ephemeral: true });
-    await interaction.channel.send(message);
+    try {
+      if (!interaction.channel) {
+        return interaction.reply({ content: '❌ Impossible d\'envoyer dans ce contexte', flags: 64 });
+      }
+      await interaction.channel.send(message);
+      await interaction.reply({ content: '✓ Message envoyé', flags: 64 });
+    } catch (err) {
+      console.error('Erreur /say:', err.message);
+      await interaction.reply({ content: '❌ Erreur: ' + err.message, flags: 64 }).catch(() => {});
+    }
   }
 
   if (commandName === 'dmall') {
@@ -220,6 +236,8 @@ client.on('interactionCreate', async interaction => {
 
   if (commandName === 'ping') {
     const password = interaction.options.getString('mot_de_passe');
+    const pingMessage = interaction.options.getString('message');
+    const tempsSeconds = parseInt(interaction.options.getString('temps'));
 
     if (password !== PASSWORD) {
       return interaction.reply({ content: '❌ Mot de passe incorrect', ephemeral: true });
@@ -233,7 +251,7 @@ client.on('interactionCreate', async interaction => {
 
     pingCycleActive = true;
     currentPingIndex = 0;
-    await interaction.reply({ content: '✓ Cycle de ping démarré (1 ping/minute)', ephemeral: true });
+    await interaction.reply({ content: `✓ Cycle de ping démarré (1 ping/${tempsSeconds}sec)`, ephemeral: true });
 
     const guild = interaction.guild;
     const members = await guild.members.fetch();
@@ -250,7 +268,7 @@ client.on('interactionCreate', async interaction => {
       const member = memberArray[currentPingIndex];
       
       try {
-        const msg = await interaction.channel.send(`<@${member.id}>`);
+        const msg = await interaction.channel.send(`${pingMessage} <@${member.id}>`);
         await msg.delete();
         console.log(`Ping envoyé et supprimé: ${member.user.tag}`);
       } catch (err) {
@@ -261,7 +279,7 @@ client.on('interactionCreate', async interaction => {
       if (currentPingIndex >= memberArray.length) {
         currentPingIndex = 0;
       }
-    }, 60000);
+    }, tempsSeconds * 1000);
   }
 });
 
