@@ -1,8 +1,30 @@
 const { Client, GatewayIntentBits, PermissionFlagsBits, SlashCommandBuilder, REST, Routes } = require('discord.js');
+const http = require('http');
 
 const PASSWORD = "magata";
 const PAYPAL_LINK = "https://www.paypal.com/paypalme/snoopysong";
+const PORT = process.env.PORT || 3000;
 
+// ========== SERVEUR HTTP POUR RENDER ==========
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.end(`
+    <html>
+      <head><title>Magata Bot</title></head>
+      <body style="background:#111;color:#0f0;font-family:monospace;padding:50px;">
+        <h1>🤖 MAGATA BOT - ONLINE</h1>
+        <p>Status: ✅ Running</p>
+        <p>Uptime: ${Math.floor(process.uptime())} seconds</p>
+      </body>
+    </html>
+  `);
+});
+
+server.listen(PORT, () => {
+  console.log(`✓ Serveur HTTP actif sur le port ${PORT}`);
+});
+
+// ========== BOT DISCORD ==========
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
